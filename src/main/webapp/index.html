@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat</title>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+        <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+
+        <style>
+            *{
+                margin: 0;
+                box-sizing: border-box;
+            }
+            body{
+                background: #d3e8bf;
+            }
+            .table{
+                width:100vw;
+                height: 100vh;
+                display: table;
+                text-align: center;
+            }
+            .cell{
+                display: table-cell;
+                vertical-align: middle;
+            }
+            .chat{
+                background: #f7f7f7;
+                width: 600px;
+                height: 500px;
+                margin: 0 auto;
+                -webkit-box-shadow: 0px 0px 11px 3px rgba(115,164,63,1);
+                -moz-box-shadow: 0px 0px 11px 3px rgba(115,164,63,1);
+                box-shadow: 0px 0px 11px 3px rgba(115,164,63,1);
+                position: relative;
+            }
+            .title{
+                font-size: 12px;
+                font-weight: bold;
+                background: #ebebeb;
+                height: 65px;
+                line-height: 65px;
+                padding: 0 40px;
+                text-align: left;
+            }
+            .msg{
+                padding:3px 40px;
+
+            }
+            .msg div{
+                background-color: white;
+                font-size: 14px;
+                padding: 6px 14px;
+                border-radius: 20px;
+                max-width: 250px;
+                display:inline-block;
+                color:black;
+            }
+            .chat .msg.right{
+                text-align: right;
+            }
+            .chat .msg.right div{
+                background-color: transparent;
+
+            }
+            .chat .msg.left{
+                text-align: left;
+            }
+            .chat .msg.left div{
+                background-color: transparent;
+
+            }
+            #textfiled{
+                width: 100%;
+                border: 0;
+                height: 38px;
+                padding: 5px 20px;
+                border-radius: 10px;
+            }
+            .control{
+                background: #ebebeb;
+                padding: 12px 25px;
+                position: absolute;
+                bottom:0;
+                left:0;
+                width: 100%;
+            }
+            .active-chat{
+                overflow-y:scroll;
+                height:373px;
+            }
+        </style>
+    </head>
+    <body>
+        <script>
+            var arr = new Array();
+            var lastid = -1;
+            $(window).load(
+                    function () {
+                        var person = prompt("Please enter your name", "Harry Potter");
+
+                        if (person == null || person == "") {
+                            $(".title").text("anounemas");
+                        } else {
+                            $(".title").text(person);
+                        }
+
+                        setInterval(
+                                function () {
+                                    console.log(lastid);
+                                    var j = {
+                                        url: 'ChatServlet',
+                                        data: {id: lastid,
+                                        },
+                                        type: 'GET',
+                                        contentType: 'application/x-www-form-urlencoded',
+                                        dataType: 'json',
+                                        success: function (data) {
+                                            for (var i = 0; i < data.length; i++)
+                                            {
+                                                console.log(data[i].id+" " +lastid);
+                                                if (arr.indexOf(data[i].id) === -1 && data[i].id>lastid)
+                                                {
+                                                    var cloened = $("#cloned >*").clone(true);
+                                                    cloened.find("#name").text(data[i].user);
+                                                    cloened.find("#mass").text(data[i].massge);
+                                                    $("#list").append(cloened);
+                                                    lastid = data[i].id;
+                                                    console.log(lastid);
+                                                }
+                                            }
+
+                                        }
+                                    };
+
+                                    $.ajax(j);
+                                }
+
+                        , 5000)
+
+                        $("#textfiled").on('keyup', function (e) {
+
+                            if (e.keyCode == 13) {
+                                {
+                                    var j = {
+                                        url: 'ChatServlet',
+                                        data: {mes: $("#textfiled").val(),
+                                            name: $(".title").text()},
+                                        type: 'POST',
+                                        contentType: 'application/x-www-form-urlencoded',
+                                        dataType: 'json',
+                                        success: function (data) {
+
+                                            arr.push(data.id);
+                                            var cloened = $("#me >*").clone(true);
+
+                                            cloened.find("#mass").text(data.massge);
+                                            $("#list").append(cloened);
+                                        }
+                                    };
+                                    $("#textfiled").val("");
+                                    $.ajax(j);
+                                }
+
+                            }
+                        });
+                    });
+
+        </script>
+        <div class="table">
+            <div class="cell">
+                <div class="chat">
+                    <div class="title">Aya Hilal</div>
+                    <div class="active-chat" id="list">
+                        <!-- padding-left:0;padding-right:0; for the name of the sender -->
+                        <div id ="cloned" style="display: none">     <div class="msg right" align= "{dir}" ><div id="name" style="color: black;">hmada</div></div>
+                            <div class="msg right" align= "{dir}" ><div id="mass" style="background-color: #CCD3F5;color: black;">hmada</div></div>
+                        </div>
+                        <div id ="me" style="display: none">     <div class="msg left" align= "{dir}" ><div id="name" style="color: black;">You</div></div>
+                            <div class="msg left" align= "{dir}" ><div id="mass" style="background-color: #CCD3F5;color: black;">hmada</div></div>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <input type="text"  id="textfiled" placeholder="send a message..."/>
+                    </div>
+                </div>
+            </div>
+        </div>  
+    </body>
+</html>
